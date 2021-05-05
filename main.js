@@ -457,8 +457,9 @@ function createMapToolWindow(callback) {
         nodeIntegration: true,
         enableRemoteModule: true
       }
-    }));
+    });
     maptools.webContents.openDevTools();
+    callback(maptools);
 
   });
 
