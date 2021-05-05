@@ -350,6 +350,7 @@ function openSettingsWindow() {
 let loading;
 
 function createWindow() {
+
   // Create the browser window.
   loading = new BrowserWindow({
     width: 200, height: 200, show: false, frame: false, transparent: true, icon: "./app/css/img/icon.png", webPreferences: {
@@ -445,7 +446,7 @@ function createMapToolWindow(callback) {
     }
     transparentWindow = (data.maptool.transparentWindow ? data.maptool.transparentWindow : false)
     console.log("Creating maptool window. Transparent: " + transparentWindow);
-    callback(new BrowserWindow({
+    let maptools = new BrowserWindow({
       height: 600,
       resizable: true,
       width: 1200,
@@ -457,6 +458,7 @@ function createMapToolWindow(callback) {
         enableRemoteModule: true
       }
     }));
+    maptools.webContents.openDevTools();
 
   });
 

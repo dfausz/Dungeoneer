@@ -7,6 +7,7 @@ var autoRoll = document.querySelector("#autoRollInitiative");
 var roundCounter = document.querySelector("#roundCounterIntitiative");
 var addPlayersAutomatically = document.querySelector("#addPlayersAutomatically");
 var snapToGrid = document.querySelector("#snapToGrid");
+var snapMeasurementsToGrid = document.querySelector("#snapMeasurementsToGrid")
 var enableGrid = document.getElementById("enableGrid");
 var mobControllerEnabled = document.getElementById("mobControllerEnabled");
 var transparentMaptoolWindow = document.getElementById("transparentWindow");
@@ -39,9 +40,10 @@ document.addEventListener("DOMContentLoaded", function () {
         defaultPlayerTokenRotate.value = data.maptool.defaultPlayerTokenRotate || -90;
         addPlayersAutomatically.checked = data.maptool.addPlayersAutomatically;
         applyDarkvisionFilter.checked = data.maptool.applyDarkvisionFilter;
-        snapToGrid.checked = data.maptool.snapToGrid
+        snapToGrid.checked = data.maptool.snapToGrid;
+        snapMeasurementsToGrid.checked = data.maptool.snapMeasurementsToGrid;
         enableGrid.checked = data.maptool.enableGrid;
-        syncToCombatPanel.checked = data.maptool.syncToCombatPanel
+        syncToCombatPanel.checked = data.maptool.syncToCombatPanel;
         diceRoller.checked = data.enable.diceRoller;
         generator.checked = data.enable.generator;
         lootRoller.checked = data.enable.lootRoller;
@@ -104,6 +106,7 @@ function saveSettings(closeImmediately) {
 
         data.maptool.addPlayersAutomatically = addPlayersAutomatically.checked;
         data.maptool.snapToGrid = snapToGrid.checked;
+        data.mapTool.snapLengthAndConesToGrid = snapMeasurementsToGrid.checked;
         data.maptool.enableGrid = enableGrid.checked;
         data.maptool.syncToCombatPanel = syncToCombatPanel.checked;
         data.maptool.applyDarkvisionFilter = applyDarkvisionFilter.checked;

@@ -1,4 +1,4 @@
-const { ipcRenderer, webFrame } = require('electron');
+const { ipcRenderer, webFrame, BrowserWindow } = require('electron');
 const path = require("path");
 
 
@@ -555,16 +555,13 @@ document.addEventListener("DOMContentLoaded", function () {
         change: pawnBgColorChosen
     });
 
-    $("#background_color_button_change_pawn")
     document.getElementById("foreground_size_slider").oninput = function (event) {
-
+        console.log(event);
         resizeForeground(event.target.value);
     }
 
-    $("#background_color_button_change_pawn")
     document.getElementById("background_size_slider").oninput = function (event) {
         resizeBackground(event.target.value);
-
     }
 
     function pawnBgColorChosen(color) {
@@ -726,6 +723,17 @@ function onSettingsLoaded() {
             canvasMoveRate = 2;
         }, 600)
 
+        if (event.shiftKey && event.altKey) {
+            let currentSize = parseFloat(foregroundCanvas.style.width);
+            if(event.key == "ArrowUp" || event.key == "ArrowRight") {
+                resizeForeground(currentSize + 5);
+            }
+            else if (event.key == "ArrowDown" || event.key == "ArrowLeft") {
+                resizeForeground(currentSize - 5);
+            }
+            return;
+        }
+
 
         var bgX = mapContainer.data_transform_x;
         var bgY = mapContainer.data_transform_y;
@@ -779,9 +787,8 @@ function onSettingsLoaded() {
         fovLighting.nudgeSegments(offsetChangeX, offsetChangeY);
         fovLighting.drawSegments();
         window.requestAnimationFrame(refreshFogOfWar);
-
     }
-
+    
     gridLayer.onwheel = function (event) {
         event.preventDefault();
 
@@ -814,11 +821,13 @@ function onSettingsLoaded() {
             previewPlacementElement.style.height = actualHeight + "px";
             adjustPreviewPlacement(event);
 
-        } else if (!event.shiftKey) {
+            resizeForeground(foregroundCanvas.style.height + dir);
+        } 
+        else if (!event.shiftKey) {
             var dir = event.deltaY > 0 ? -0.1 : 0.1;
-
+            
             zoomIntoMap(event, dir);
-
+            
         }
     };
 
@@ -1177,7 +1186,6 @@ function toggleSaveTimer() {
  */
 
 function resizeForeground(newWidth) {
-
     var oldHeight = parseFloat(foregroundCanvas.style.height);
     var oldWidth = parseFloat(foregroundCanvas.style.height);
     var newHeight = newWidth * foregroundCanvas.heightToWidthRatio;
@@ -1689,6 +1697,12 @@ function startMeasuring(event) {
             } else {
                 lastMeasuredLine = {};
             }
+
+            if(event.ctrlKey) {
+                snapOriginPointToGridCenter(measurementOriginPosition);
+                snapPointToCellSize({x: event.clientX, y: event.clientY});
+            }
+
             measurementsLayerContext.beginPath();
             measurementsLayerContext.moveTo(measurementOriginPosition.x, measurementOriginPosition.y);
             measurementsLayerContext.lineTo(event.clientX, event.clientY);
@@ -1772,6 +1786,13 @@ function startMeasuring(event) {
             }
             var width = event.clientX - measurementOriginPosition.x;
             var height = event.clientY - measurementOriginPosition.y;
+
+            if (event.ctrlKey) {
+                snapOriginPointToGridCorner(measurementOriginPosition);
+                width = snapToCellSize(width);
+                height = snapToCellSize(height);
+            }
+
             measurementsLayerContext.beginPath();
             measurementsLayerContext.moveTo(measurementOriginPosition.x, measurementOriginPosition.y);
             measurementsLayerContext.rect(measurementOriginPosition.x, measurementOriginPosition.y, width, height);
@@ -1803,12 +1824,19 @@ function startMeasuring(event) {
                 Math.pow(event.clientX - measurementOriginPosition.x, 2) +
                 Math.pow(event.clientY - measurementOriginPosition.y, 2)
             );
+
+            if(event.ctrlKey){
+                snapOriginPointToGridCenter(measurementOriginPosition);
+                halfCell = cellSize / 2;
+                radius = Math.ceil(radius / halfCell) * halfCell;
+            }
+
             measurementsLayerContext.beginPath();
             measurementsLayerContext.moveTo(measurementOriginPosition.x - radius, measurementOriginPosition.y - radius);
             measurementsLayerContext.rect(measurementOriginPosition.x - radius, measurementOriginPosition.y - radius, radius * 2, radius * 2);
             measurementsLayerContext.stroke();
             measurementsLayerContext.fill();
-            showToolTip(event, Math.round(radius / cellSize * 5) * 2 + " ft", "tooltip");
+            showToolTip(event, Math.round((radius / cellSize * 5) * 2) + " ft", "tooltip");
             lastMeasuredCube.x = measurementOriginPosition.x;
             lastMeasuredCube.y = measurementOriginPosition.y;
 
@@ -1834,6 +1862,12 @@ function startMeasuring(event) {
                 Math.pow(event.clientX - measurementOriginPosition.x, 2) +
                 Math.pow(event.clientY - measurementOriginPosition.y, 2)
             );
+
+            if(event.ctrlKey){
+                snapOriginPointToGridCenter(measurementOriginPosition);
+                radius = snapToCellSize(radius);
+            }
+
             measurementsLayerContext.beginPath();
             measurementsLayerContext.moveTo(measurementOriginPosition.x, measurementOriginPosition.y);
             measurementsLayerContext.arc(measurementOriginPosition.x, measurementOriginPosition.y, radius, 0, 2 * Math.PI);
@@ -1848,6 +1882,10 @@ function startMeasuring(event) {
         })
     }
 
+    function snapToCellSize(x) {
+        return Math.ceil(x / cellSize) * cellSize;
+    }
+
     function measureCone(event) {
         window.requestAnimationFrame(function () {
             if (lastMeasuredCone) {
@@ -1860,28 +1898,46 @@ function startMeasuring(event) {
             } else {
                 lastMeasuredCone = {};
             }
+
+            let clientPoint = {x: event.clientX, y: event.clientY};
+            if (event.ctrlKey) {
+                snapOriginPointToGridCenter(measurementOriginPosition);
+                let distance = Math.round(
+                    Math.sqrt(
+                        Math.pow(clientPoint.x - measurementOriginPosition.x, 2) +
+                        Math.pow(clientPoint.y - measurementOriginPosition.y, 2)
+                ));
+                let desiredDistance = Math.ceil(distance / cellSize) * cellSize
+                let desiredPoint = clientPoint;
+                desiredPoint.x = measurementOriginPosition.x + ((desiredDistance / distance) * (clientPoint.x - measurementOriginPosition.x));
+                desiredPoint.y = measurementOriginPosition.y + ((desiredDistance / distance) * (clientPoint.y - measurementOriginPosition.y));
+                clientPoint = desiredPoint;
+            }
+
             measurementsLayerContext.beginPath();
             measurementsLayerContext.moveTo(measurementOriginPosition.x, measurementOriginPosition.y);
-            var newPoint = rotate(0.46355945, measurementOriginPosition, { x: event.clientX, y: event.clientY });
-            var newPoint2 = rotate(-0.46355944999997217, measurementOriginPosition, { x: event.clientX, y: event.clientY });
+            var newPoint = rotate(0.463647, measurementOriginPosition, clientPoint);
+            var newPoint2 = rotate(-0.463647, measurementOriginPosition, clientPoint);
 
             var midPoint = {
                 x: (newPoint.x + newPoint2.x) / 2,
                 y: (newPoint.y + newPoint2.y) / 2
             }
-
-
+            
+            
             measurementsLayerContext.lineTo(newPoint.x, newPoint.y);
             measurementsLayerContext.lineTo(newPoint2.x, newPoint2.y);
             measurementsLayerContext.lineTo(measurementOriginPosition.x, measurementOriginPosition.y);
             measurementsLayerContext.stroke();
             measurementsLayerContext.fill();
-
-            showToolTip(event, Math.round(
+            
+            let length = Math.round(
                 Math.sqrt(
                     Math.pow(midPoint.x - measurementOriginPosition.x, 2) +
                     Math.pow(midPoint.y - measurementOriginPosition.y, 2)
-                ) / cellSize * 5) + " ft", "tooltip");
+                    ) / cellSize * 5) + " ft";
+                    
+            showToolTip(event, length, "tooltip");
 
             lastMeasuredCone.x = measurementOriginPosition.x;
             lastMeasuredCone.y = measurementOriginPosition.y;
@@ -2071,9 +2127,37 @@ function refreshMeasurementTooltip() {
     }
 
 }
+
+function snapToCellSize(x) {
+    return Math.ceil(x / cellSize) * cellSize;
+}
+
+function snapPointToCellSize(point) {
+    point.x = snapToCellSize(point.x);
+    point.y = snapToCellSize(point.y);
+    return point;
+}
+
+function snapOriginPointToGridCenter(point){
+    let transform = (x) => (Math.floor(x / cellSize) * cellSize) + (cellSize / 2);
+    point.x = transform(point.x);
+    point.y = transform(point.y); 
+}
+
+function snapOriginPointToGridCorner(point){
+    let transform = (x) => Math.floor(x / cellSize) * cellSize;
+    point.x = transform(point.x);
+    point.y = transform(point.y);
+}
+
 var lastMeasuredSphere, lastMeasuredCube, lastMeasuredCone;
 var lastMeasuredLineDrawn, totalMeasuredDistance = 0;
 function drawLineAndShowTooltip(originPosition, destinationPoint, event) {
+
+    if(event.ctrlKey) {
+        snapOriginPointToGridCenter(originPosition);
+        snapOriginPointToGridCenter(destinationPoint);
+    }
 
     var measuredDistance = Math.round(
         Math.sqrt(
@@ -2096,6 +2180,7 @@ function drawLineAndShowTooltip(originPosition, destinationPoint, event) {
         lastMeasuredLineDrawn = {};
 
     }
+
     measurementsLayerContext.beginPath();
     measurementsLayerContext.moveTo(originPosition.x, originPosition.y);
     measurementsLayerContext.lineTo(destinationPoint.x, destinationPoint.y);
@@ -2205,8 +2290,6 @@ function setLightSource(brightLight, dimLight, params) {
         }
 
     })
-
-
 
     refreshFogOfWar();
 }
@@ -3554,9 +3637,9 @@ function addPawnListeners() {
         pawns.all[i].onwheel = function (event) {
             if (event.shiftKey) {
                 if (event.deltaY > 0) {
-                    rotatePawn(event.target, 3);
+                    rotatePawn(event.target, 90);
                 } else {
-                    rotatePawn(event.target, -3);
+                    rotatePawn(event.target, -90);
                 }
 
             } else if (event.ctrlKey) {
