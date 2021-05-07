@@ -4,6 +4,7 @@ const { ipcMain } = require('electron')
 var fs = require('fs');
 var pathModule = require('path');
 const { autoUpdater } = require('electron-updater');
+require('electron-reload')(__dirname);
 
 app.allowRendererProcessReuse = false;
 autoUpdater.logger = require("electron-log")
