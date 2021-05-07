@@ -655,13 +655,9 @@ function centerForegroundOnBackground() {
 }
 
 function moveForeground(x, y) {
-    var oldRect = foregroundCanvas.getBoundingClientRect();
     foregroundCanvas.data_transform_x = x;
     foregroundCanvas.data_transform_y = y;
     foregroundCanvas.style.transform = `translate(${x}px, ${y}px)`
-    var newRect = foregroundCanvas.getBoundingClientRect();
-    gridMoveOffsetX += newRect.x - oldRect.x;
-    gridMoveOffsetY += newRect.y - oldRect.y;
 }
 
 function moveMap(x, y) {
