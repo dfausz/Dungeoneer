@@ -130,7 +130,8 @@ function loadSettings() {
 
 function savePawnOffsets() {
     if(pawns.all.length > 0) {
-        settings.pawnOffsets = Array.from(pawns.all).map((pawn) => { return {name: pawn.dnd_name, offsetLeft: pawn.offsetLeft - gridMoveOffsetX, offsetTop: pawn.offsetTop - gridMoveOffsetY} });
+        let createPawnOffset = (pawn) => { return {name: pawn.dnd_name, offsetLeft: (pawn.offsetLeft - gridMoveOffsetX) / mapContainer.data_bg_scale, offsetTop: (pawn.offsetTop - gridMoveOffsetY) / mapContainer.data_bg_scale} }
+        settings.pawnOffsets = Array.from(pawns.all).map(createPawnOffset);
     }
 }
 
@@ -2479,8 +2480,8 @@ function generatePawns(pawnArray, monsters, optionalSpawnPoint) {
             if(settings?.pawnOffsets.length > 0) {
                 settings.pawnOffsets.forEach(pawn => {
                     if(pawn.name == newPawn.dnd_name){
-                        newPawn.style.top = (pawn.offsetTop + gridMoveOffsetY) + "px";
-                        newPawn.style.left = (pawn.offsetLeft + gridMoveOffsetX) + "px";
+                        newPawn.style.top = ((pawn.offsetTop + gridMoveOffsetY) / mapContainer.data_bg_scale) + "px";
+                        newPawn.style.left = ((pawn.offsetLeft + gridMoveOffsetX) / mapContainer.data_bg_scale) + "px";
                     }
                 });
             }
