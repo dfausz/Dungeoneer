@@ -120,17 +120,25 @@ function loadSettings() {
         } else if (settings.map_edge_style) {
             document.querySelector(".maptool_body").style.backgroundImage = "url('" + settings.map_edge_style + "')";
         }
-        if (!partyArray)
+
+        if (!partyArray){
             loadParty();
+        }
         onSettingsLoaded();
     });
 }
 
+function savePawnOffsets() {
+    if(pawns.all.length > 0) {
+        settings.pawnOffsets = Array.from(pawns.all).map((pawn) => { return {name: pawn.dnd_name, offsetLeft: pawn.offsetLeft - gridMoveOffsetX, offsetTop: pawn.offsetTop - gridMoveOffsetY} });
+    }
+}
+
 function saveSettings() {
     dataAccess.getSettings(function (data) {
+        savePawnOffsets();
         data.maptool = settings;
         dataAccess.saveSettings(data);
-
     });
 }
 
@@ -144,7 +152,6 @@ function setBackgroundFilter() {
         filtered = true;
         filterDd.classList.add("toggle_button_toggled");
     }
-    console.log(filterValue);
     if (fovLighting.viewerHasDarkvision() && settings.applyDarkvisionFilter) {
         filterValue = "grayscale(80%)";
     }
@@ -592,6 +599,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("add_things_button").onclick = function (e) {
         ipcRenderer.send("open-add-maptool-stuff-window");
     }
+    document.getElementById("save_settings_button").onclick = () => {
+        saveSettings();
+    }
 
 
     dataAccess.getConditions(function (data) {
@@ -864,25 +874,25 @@ function onSettingsLoaded() {
 
         if (path != null) {
             var data = {};
-            /*
-                    var pawnsToSave = [...pawns.all].filter(paw => !isPlayerPawn(paw));
-                    data.pawns = [];
-                
-                    pawnsToSave.forEach(p => {
-                        data.pawns.push({
-                            html: p.outerHTML,
-                            lightEffect: isLightEffect(p),
-                            sightRadius: { b: p.sight_radius_bright_light, d: p.sight_radius_dim_light },
-                            dnd_hexes : p.dnd_hexes,
-                            dnd_size : p.dnd_size,
-                            sight_mode : p.sight_mode,
-                            "data-dnd_conditions": p["data-dnd_conditions"],
-                            flying_height: p.flying_height
+            
+            // var pawnsToSave = [...pawns.all].filter(paw => !isPlayerPawn(paw));
+            // data.pawns = [];
         
-                        })
-                    })
-                    */
-            //data.pawns = pawnsToSave;
+            // pawnsToSave.forEach(p => {
+            //     data.pawns.push({
+            //         html: p.outerHTML,
+            //         lightEffect: isLightEffect(p),
+            //         sightRadius: { b: p.sight_radius_bright_light, d: p.sight_radius_dim_light },
+            //         dnd_hexes : p.dnd_hexes,
+            //         dnd_size : p.dnd_size,
+            //         sight_mode : p.sight_mode,
+            //         "data-dnd_conditions": p["data-dnd_conditions"],
+            //         flying_height: p.flying_height
+
+            //     })
+            // })
+                    
+            // data.pawns = pawnsToSave;
             data.moveOffsetX = gridMoveOffsetX;
             data.moveOffsetY = gridMoveOffsetY;
             data.effects = effects;
@@ -2323,7 +2333,6 @@ function loadParty() {
             }
         }
 
-
         generatePawns(newPartyArray, false);
         fillForcedPerspectiveDropDown();
 
@@ -2456,6 +2465,9 @@ function generatePawns(pawnArray, monsters, optionalSpawnPoint) {
 
         newPawn.flying_height = 0;
         newPawn["data-dnd_conditions"] = [];
+        
+        newPawn.firstChild.style.borderRadius = "90px";
+
         if (optionalSpawnPoint) {
             newPawn.style.top = optionalSpawnPoint.y + "px";
             newPawn.style.left = optionalSpawnPoint.x + "px";
@@ -2463,6 +2475,15 @@ function generatePawns(pawnArray, monsters, optionalSpawnPoint) {
         } else {
             newPawn.style.top = lastPoint.y * cellSize + "px";
             newPawn.style.left = lastPoint.x * cellSize + "px";
+
+            if(settings?.pawnOffsets.length > 0) {
+                settings.pawnOffsets.forEach(pawn => {
+                    if(pawn.name == newPawn.dnd_name){
+                        newPawn.style.top = (pawn.offsetTop + gridMoveOffsetY) + "px";
+                        newPawn.style.left = (pawn.offsetLeft + gridMoveOffsetX) + "px";
+                    }
+                });
+            }
         }
 
         lastPoint.y++;
@@ -3326,7 +3347,6 @@ function startSelectingPawns(e) {
                 measurementsLayerContext.stroke();
                 measurementsLayerContext.globalCompositeOperation = 'source-over'
                 measurementsLayerContext.lineWidth = 2;
-
             } else {
                 oldSelectionRectangle = {};
             }
@@ -3669,6 +3689,7 @@ function addPawnListeners() {
 
 
 }
+
 function nudgePawns(x, y) {
     for (var i = 0; i < pawns.all.length; i++) {
         pawns.all[i].style.top = parseFloat(pawns.all[i].style.top) + y + "px";

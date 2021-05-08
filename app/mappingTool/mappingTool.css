@@ -60,7 +60,6 @@ body {
     min-height: 100%;
     overflow: hidden;
     -webkit-user-select: none;
-    background-image: url('C:/Users/notandi/Documents/DnD/Nýársgrúbba/Maps/Corinthia/city.png');
     background-size: 200%;
 }
 
@@ -616,4 +615,10 @@ li {
 .menu_seperator {
     border-top: 0.5em solid rgba(0, 0, 0, 0.2);
     width: 100%;
+}
+
+#save_settings_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

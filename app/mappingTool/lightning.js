@@ -89,7 +89,6 @@ var fovLighting = function () {
     var forcedPerspectiveOrigin;
     var DRAW_EXECUTE_TIMEOUT;
     function drawFogOfWar() {
-        console.log(segments.length)
         if (segments.length < SEGMENT_COUNT_BEFORE_OPTIMIZATION)
             return doDrawFogOfWar();
 
