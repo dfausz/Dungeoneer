@@ -123,21 +123,42 @@ function loadSettings() {
 
         if (!partyArray){
             loadParty();
+            loadMobs();
         }
         onSettingsLoaded();
     });
 }
 
-function savePawnOffsets() {
-    if(pawns.all.length > 0) {
-        let createPawnOffset = (pawn) => { return {name: pawn.dnd_name, offsetLeft: (pawn.offsetLeft - gridMoveOffsetX) / mapContainer.data_bg_scale, offsetTop: (pawn.offsetTop - gridMoveOffsetY) / mapContainer.data_bg_scale} }
-        settings.pawnOffsets = Array.from(pawns.all).map(createPawnOffset);
+function loadMobs() {
+    let adjustLocationX = (location) => (location + gridMoveOffsetX) * mapContainer.data_bg_scale;
+    let adjustLocationY = (location) => (location + gridMoveOffsetY) * mapContainer.data_bg_scale;
+
+    for(let mob of settings.mobs) {
+        generatePawns([mob], true, {x: adjustLocationX(mob.offsetLeft), y: adjustLocationY(mob.offsetTop) });
     }
+}
+
+function savePawnOffsets() {
+    let players = Array.from(pawns.all).filter((x) => x.dnd_name != "");
+    if(players.length > 0) {
+        let createPawnOffset = (pawn) => { return {name: pawn.dnd_name, offsetLeft: (pawn.offsetLeft - gridMoveOffsetX) / mapContainer.data_bg_scale, offsetTop: (pawn.offsetTop - gridMoveOffsetY) / mapContainer.data_bg_scale} }
+        settings.pawnOffsets = players.map(createPawnOffset);
+    }
+}
+
+function saveMonsterTokens() {
+    let adjustLocationX = (location) => (location - gridMoveOffsetX) / mapContainer.data_bg_scale;
+    let adjustLocationY = (location) => (location - gridMoveOffsetY) / mapContainer.data_bg_scale;
+
+    let tokens = Array.from(pawns.all).filter((x) => x.dnd_name == "");
+    let tokenData = tokens.map((x) => {return {name:"", bgPhoto: null, size:x.dnd_size, color:x.style.backgroundColor, offsetLeft:adjustLocationX(x.offsetLeft), offsetTop:adjustLocationY(x.offsetTop)}})
+    settings.mobs = tokenData;
 }
 
 function saveSettings() {
     dataAccess.getSettings(function (data) {
         savePawnOffsets();
+        saveMonsterTokens();
         data.maptool = settings;
         dataAccess.saveSettings(data);
     });
@@ -2469,22 +2490,21 @@ function generatePawns(pawnArray, monsters, optionalSpawnPoint) {
         
         newPawn.firstChild.style.borderRadius = "90px";
 
-        if (optionalSpawnPoint) {
+        if(!monsters && settings?.pawnOffsets.length > 0) {
+            settings.pawnOffsets.forEach(pawn => {
+                if(pawn.name == newPawn.dnd_name){
+                    newPawn.style.top = ((pawn.offsetTop + gridMoveOffsetY) / mapContainer.data_bg_scale) + "px";
+                    newPawn.style.left = ((pawn.offsetLeft + gridMoveOffsetX) / mapContainer.data_bg_scale) + "px";
+                }
+            });
+        } else if (optionalSpawnPoint) {
             newPawn.style.top = optionalSpawnPoint.y + "px";
             newPawn.style.left = optionalSpawnPoint.x + "px";
-
+            
         } else {
             newPawn.style.top = lastPoint.y * cellSize + "px";
             newPawn.style.left = lastPoint.x * cellSize + "px";
 
-            if(settings?.pawnOffsets.length > 0) {
-                settings.pawnOffsets.forEach(pawn => {
-                    if(pawn.name == newPawn.dnd_name){
-                        newPawn.style.top = ((pawn.offsetTop + gridMoveOffsetY) / mapContainer.data_bg_scale) + "px";
-                        newPawn.style.left = ((pawn.offsetLeft + gridMoveOffsetX) / mapContainer.data_bg_scale) + "px";
-                    }
-                });
-            }
         }
 
         lastPoint.y++;
