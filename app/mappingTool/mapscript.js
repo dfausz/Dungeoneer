@@ -123,7 +123,9 @@ function loadSettings() {
 
         if (!partyArray){
             loadParty();
-            loadMobs();
+            if(settings.mobs){
+                loadMobs();
+            }
         }
         onSettingsLoaded();
     });
@@ -159,6 +161,15 @@ function saveSettings() {
     dataAccess.getSettings(function (data) {
         savePawnOffsets();
         saveMonsterTokens();
+        data.maptool = settings;
+        dataAccess.saveSettings(data);
+    });
+}
+
+function clearPawns() {
+    dataAccess.getSettings(function (data) {
+        settings.pawnOffsets = null;
+        settings.mobs = null;
         data.maptool = settings;
         dataAccess.saveSettings(data);
     });
@@ -540,6 +551,7 @@ function resumeAllAnimations() {
 function reloadMap() {
     if (pawns.all.length > pawns.players.length && !window.confirm("All pawns will be removed. Do you wish to reload the window?"))
         return;
+    clearPawns();
     location.reload();
 }
 document.addEventListener("DOMContentLoaded", function () {
@@ -896,25 +908,6 @@ function onSettingsLoaded() {
 
         if (path != null) {
             var data = {};
-            
-            // var pawnsToSave = [...pawns.all].filter(paw => !isPlayerPawn(paw));
-            // data.pawns = [];
-        
-            // pawnsToSave.forEach(p => {
-            //     data.pawns.push({
-            //         html: p.outerHTML,
-            //         lightEffect: isLightEffect(p),
-            //         sightRadius: { b: p.sight_radius_bright_light, d: p.sight_radius_dim_light },
-            //         dnd_hexes : p.dnd_hexes,
-            //         dnd_size : p.dnd_size,
-            //         sight_mode : p.sight_mode,
-            //         "data-dnd_conditions": p["data-dnd_conditions"],
-            //         flying_height: p.flying_height
-
-            //     })
-            // })
-                    
-            // data.pawns = pawnsToSave;
             data.moveOffsetX = gridMoveOffsetX;
             data.moveOffsetY = gridMoveOffsetY;
             data.effects = effects;
@@ -987,7 +980,6 @@ function onSettingsLoaded() {
 
             }
             data = JSON.parse(data);
-            //  pawns = data.pawns;
 
             gridMoveOffsetX = data.moveOffsetX;
             gridMoveOffsetY = data.moveOffsetY;
@@ -996,10 +988,10 @@ function onSettingsLoaded() {
 
             resizeForeground(data.bg_width);
 
-            //    foregroundCanvas.style.width = data.bg_width + "px";
-            //    foregroundCanvas.style.height = data.bg_width * foregroundCanvas.heightToWidthRatio + "px";
+            // foregroundCanvas.style.width = data.bg_width + "px";
+            // foregroundCanvas.style.height = data.bg_width * foregroundCanvas.heightToWidthRatio + "px";
 
-            //    document.getElementById("foreground_size_slider").value = data.bg_width;
+            // document.getElementById("foreground_size_slider").value = data.bg_width;
 
             fovLighting.setSegments(data.segments);
 
@@ -2490,7 +2482,7 @@ function generatePawns(pawnArray, monsters, optionalSpawnPoint) {
         
         newPawn.firstChild.style.borderRadius = "90px";
 
-        if(!monsters && settings?.pawnOffsets.length > 0) {
+        if(!monsters && settings?.pawnOffsets?.length > 0) {
             settings.pawnOffsets.forEach(pawn => {
                 if(pawn.name == newPawn.dnd_name){
                     newPawn.style.top = ((pawn.offsetTop + gridMoveOffsetY) / mapContainer.data_bg_scale) + "px";
