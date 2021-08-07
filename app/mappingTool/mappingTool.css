@@ -119,6 +119,8 @@ li {
     z-index: var(--z-index-tooltip);
     padding: 15px;
     font-size: 16px;
+    box-shadow: 5px 5px 12px black;
+    border-radius: 3px;
 }
 
 .popup_dialog>* {
@@ -621,4 +623,101 @@ li {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.color-selector-container {
+    display: flex;
+    /* padding: 8px; */
+    margin-bottom: 8px;
+    justify-content: center;
+}
+
+.color-selector {
+    height: 25px;
+    width: 25px;
+    margin: 4px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.color-selector.tan {
+    border: 1px solid lightgray;
+    margin: 3px;
+}
+
+.color-selector.selected {
+    border: 3px solid rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    margin: 1px;
+}
+
+.color-selector.custom {
+    font-size: 25px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.color-selector:not(.selected):hover {
+    border: 3px solid rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    margin: 1px;
+}
+
+#add_pawn_size {
+    font-size: 1em;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+    color: black;
+    border-bottom: 1px solid lightgray;
+    padding: 0;
+}
+
+#popup_dialogue_add_pawn {
+    padding: 12px;
+}
+
+#add_pawn_name {
+    background-color: transparent;
+    border-bottom: 1px solid lightgray;
+    padding: 0;
+    font-size: 1em;
+    margin-left: 4px;
+}
+
+.add-pawn-field-container {
+    display: flex;
+    align-items: center;
+    padding: 8px 4px;
+}
+
+.add-pawn-label {
+    color: #000000B0;
+    margin-right: 14px;
+    flex: 1;
+    text-align: right;
+}
+
+.add-pawn-field {
+    flex: 5;
+}
+
+.add-pawn-choose-token-button {
+    width: auto;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.add-pawn-choose-token-button:hover {
+    background-color: #FFFFFF40;
+}
+
+.add-pawn-close-button {
+    align-self: flex-end;
+    padding: 4px 12px;
+}
+
+.add-pawn-choose-token-label {
+    margin-right: 8px;
 }

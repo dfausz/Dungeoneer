@@ -866,9 +866,7 @@
                 addColorToSelectionPalette(color);
             }
 
-            if (isInput) {
-                boundElement.val(displayColor);
-            }
+            boundElement[0].style.backgroundColor = displayColor;
 
             if (fireCallback && hasChanged) {
                 callbacks.change(color);

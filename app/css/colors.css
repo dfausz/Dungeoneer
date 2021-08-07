@@ -228,8 +228,9 @@ hr {
   user-select: none;
   transition: background-color 300ms;
   border: none;
-  border-bottom: 2px solid var(--main-underline-color);
+  /* border-bottom: 2px solid var(--main-underline-color); */
   border-radius: var(--rounded-corners);
+  cursor: pointer;
 }
 
 .button_style_label {
@@ -811,6 +812,7 @@ input, textarea, .cell_row {
   width: 50px;
   height: 50px;
   border-radius: 3px;
+  cursor: pointer;
   /** border-radius:5px;**/
 }
 
@@ -977,6 +979,7 @@ header {
   box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.75);
   position: relative;
   border-bottom: 3px solid rgb(108, 67, 45);
+  border-top: 3px solid rgb(108, 67, 45);
 }
 
 .margin_top {
@@ -1656,4 +1659,5 @@ input[data-before_label]:before {
   text-align: center;
   background-color: transparent;
   border: none;
+  cursor: pointer;
 }

@@ -4,7 +4,10 @@ const { ipcMain } = require('electron')
 var fs = require('fs');
 var pathModule = require('path');
 const { autoUpdater } = require('electron-updater');
-require('electron-reload')(__dirname);
+
+if(process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false) {
+  require('electron-reload')(__dirname);
+}
 
 app.allowRendererProcessReuse = false;
 autoUpdater.logger = require("electron-log")
@@ -459,7 +462,7 @@ function createMapToolWindow(callback) {
         enableRemoteModule: true
       }
     });
-    maptools.webContents.openDevTools();
+    // maptools.webContents.openDevTools();
     callback(maptools);
 
   });

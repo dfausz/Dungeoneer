@@ -366,19 +366,35 @@
                 onclick="startDeletingEffects()">Remove</button>
 
         </div>
-        <div id="popup_dialogue_add_pawn" class="popup_dialog hidden column section__show">
-            <input type="text" id="add_pawn_name" placeholder="Pawn name">
-            <select id="add_pawn_size">
-
-            </select>
-
-            <button
-                title="Choose icon. If nothing is chosen, a default for the creature name is shown. If multiple files are chosen, one will be chosen randomly for each pawn."
-                id="icon_load_button_add_pawn" class="button_style">Choose Token</button>
-            <input type="text" value='rgba(255,255,255,0.5)' title="Base color" id="background_color_button_add_pawn">
-
+        <div id="popup_dialogue_add_pawn" style="top: 400px; left: 600px;" class="popup_dialog hidden column section__show">
+            <div class="add-pawn-field-container">
+                <div class="add-pawn-label">Name</div>
+                <input class="add-pawn-field" type="text" id="add_pawn_name" placeholder="Tarrasque">
+            </div>
+            <div class="add-pawn-field-container">
+                <div class="add-pawn-label">Size</div>
+                <select class="add-pawn-field" id="add_pawn_size"></select>
+            </div>
+            <div class="add-pawn-field-container">
+                <div class="add-pawn-label">Color</div>
+                <div class="color-selector-container add-pawn-field">
+                    <div class="color-selector selected" style="background-color: rgba(244,43,3);" onclick="setTokenColor(event)"></div>
+                    <div class="color-selector tan" style="background-color: rgba(207,197,159);" onclick="setTokenColor(event)"></div>
+                    <div class="color-selector" style="background-color: rgba(12,131,70);" onclick="setTokenColor(event)"></div>
+                    <div class="color-selector" style="background-color: rgba(0,159,253);" onclick="setTokenColor(event)"></div>
+                    <div class="color-selector custom" style="background-color: rgba(255,255,255);" onclick="setTokenColor(event)" id="background_color_button_add_pawn">+</div>
+                </div>
+            </div>
+            <div class="add-pawn-field-container">
+                <div class="add-pawn-choose-token-label">Upload Image</div>
+                <button
+                    title="Choose icon. If nothing is chosen, a default for the creature name is shown. If multiple files are chosen, one will be chosen randomly for each pawn."
+                    id="icon_load_button_add_pawn" class="add-pawn-choose-token-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M7,9l1.41,1.41L11,7.83V16h2V7.83l2.59,2.58L17,9l-5-5L7,9z"/></g></svg>
+                </button>
+            </div>
             <button class="button_style margin_top hidden" onclick="addPawnHandler()">Create</button>
-            <button class="button_style" onclick="closeAddPawnDialogue()">Close</button>
+            <button class="button_style add-pawn-close-button" onclick="closeAddPawnDialogue()">Close</button>
         </div>
         <div id="vision_tooltip_category" class="popup_menu hidden">
             <button class="button_style" onclick="setLightSource(0, 0)">None</button>

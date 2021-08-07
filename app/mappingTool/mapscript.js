@@ -583,21 +583,20 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#background_color_button_add_pawn").spectrum({
         preferredFormat: "rgb",
         allowEmpty: false,
-        showAlpha: true,
-        showInput: true
+        showAlpha: false,
+        showInput: false
     });
     $("#background_color_button_change_pawn").spectrum({
         preferredFormat: "rgb",
         allowEmpty: false,
-        showAlpha: true,
-        showInput: true,
+        showAlpha: false,
+        showInput: false,
         chooseText: "Set as base",
         cancelText: "Cancel",
         change: pawnBgColorChosen
     });
 
     document.getElementById("foreground_size_slider").oninput = function (event) {
-        console.log(event);
         resizeForeground(event.target.value);
     }
 
@@ -672,13 +671,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     populateSizeDropdown();
     function populateSizeDropdown() {
+        let capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
         var parent = document.getElementById("add_pawn_size");
         var count = 0;
         creaturePossibleSizes.sizes.forEach(size => {
             var newOption = document.createElement("option");
             newOption.setAttribute("value", count);
             if (size == "medium") newOption.setAttribute("selected", true)
-            newOption.innerHTML = size;
+            newOption.innerHTML = capitalize(size);
             count++;
             parent.appendChild(newOption);
         })
@@ -1719,7 +1719,7 @@ function startMeasuring(event) {
             }
 
             if(event.ctrlKey) {
-                snapOriginPointToGridCenter(measurementOriginPosition);
+                snapPointToGridCenter(measurementOriginPosition);
                 snapPointToCellSize({x: event.clientX, y: event.clientY});
             }
 
@@ -1808,7 +1808,6 @@ function startMeasuring(event) {
             var height = event.clientY - measurementOriginPosition.y;
 
             if (event.ctrlKey) {
-                snapOriginPointToGridCorner(measurementOriginPosition);
                 width = snapToCellSize(width);
                 height = snapToCellSize(height);
             }
@@ -1846,7 +1845,6 @@ function startMeasuring(event) {
             );
 
             if(event.ctrlKey){
-                snapOriginPointToGridCenter(measurementOriginPosition);
                 halfCell = cellSize / 2;
                 radius = Math.ceil(radius / halfCell) * halfCell;
             }
@@ -1884,7 +1882,6 @@ function startMeasuring(event) {
             );
 
             if(event.ctrlKey){
-                snapOriginPointToGridCenter(measurementOriginPosition);
                 radius = snapToCellSize(radius);
             }
 
@@ -1921,12 +1918,11 @@ function startMeasuring(event) {
 
             let clientPoint = {x: event.clientX, y: event.clientY};
             if (event.ctrlKey) {
-                snapOriginPointToGridCenter(measurementOriginPosition);
-                let distance = Math.round(
+                let distance =
                     Math.sqrt(
                         Math.pow(clientPoint.x - measurementOriginPosition.x, 2) +
                         Math.pow(clientPoint.y - measurementOriginPosition.y, 2)
-                ));
+                );
                 let desiredDistance = Math.ceil(distance / cellSize) * cellSize
                 let desiredPoint = clientPoint;
                 desiredPoint.x = measurementOriginPosition.x + ((desiredDistance / distance) * (clientPoint.x - measurementOriginPosition.x));
@@ -1943,7 +1939,6 @@ function startMeasuring(event) {
                 x: (newPoint.x + newPoint2.x) / 2,
                 y: (newPoint.y + newPoint2.y) / 2
             }
-            
             
             measurementsLayerContext.lineTo(newPoint.x, newPoint.y);
             measurementsLayerContext.lineTo(newPoint2.x, newPoint2.y);
@@ -1973,7 +1968,6 @@ function startMeasuring(event) {
     }
 
     function attemptToSelectPawnsFromMeasurement() {
-
         var pawnsInArea;
         if (toolbox[1] && lastMeasuredCone) { //cone
             pawnsInArea = [...pawns.all].filter(pawn => {
@@ -1990,7 +1984,8 @@ function startMeasuring(event) {
                 );
 
             });
-        } else if (toolbox[2] && lastMeasuredSphere) { //sphere
+        } 
+        else if (toolbox[2] && lastMeasuredSphere) { //sphere
 
             pawnsInArea = [...pawns.all].filter(pawn => {
                 var pawnCenter = getPawnOrigin(pawn);
@@ -2006,9 +2001,8 @@ function startMeasuring(event) {
                     }
                 ) <= lastMeasuredSphere.radius
             });
-
-
-        } else if ((toolbox[3] || toolbox[4]) && lastMeasuredCube) {//cube or rectangle
+        } 
+        else if ((toolbox[3] || toolbox[4]) && lastMeasuredCube) { //cube or rectangle
 
             var measureRectangle = toolbox[3] ?
                 {
@@ -2026,8 +2020,8 @@ function startMeasuring(event) {
                     measureRectangle.y + measureRectangle.height,
                     pawnCenter.x, pawnCenter.y)
             });
-
-        } else {
+        } 
+        else {
             return;
         }
         clearSelectedPawns();
@@ -2038,9 +2032,6 @@ function startMeasuring(event) {
             });
 
         }
-
-
-
     }
 
     function measureDistance(event) {
@@ -2056,8 +2047,6 @@ function startMeasuring(event) {
             drawLineAndShowTooltip(measurementOriginPosition, newPoint, event);
         })
     }
-
-
 
     function rotate(angle, origin, coords) {
         angle *= -1;
@@ -2084,10 +2073,8 @@ function startMeasuring(event) {
                 div.dnd_width = parseInt(lastMeasuredSphere.radius * 2 / (cellSize / 5));
                 div.dnd_height = parseInt(lastMeasuredSphere.radius * 2 / (cellSize / 5));
 
-
                 effects.push(div)
                 measurements.clearMeasurements();
-
             }
         } else {
             stopMeasuring(event);
@@ -2096,10 +2083,9 @@ function startMeasuring(event) {
 }
 
 function snapPawnToGrid(elmnt) {
-
     var positionOnTranslatedGrid = {
-        x: Math.round((elmnt.offsetLeft - gridMoveOffsetX) / cellSize) * cellSize,
-        y: Math.round((elmnt.offsetTop - gridMoveOffsetY) / cellSize) * cellSize
+        x: (Math.round((elmnt.offsetLeft - gridMoveOffsetX) / cellSize) * cellSize) + (((cellSize * elmnt.dnd_hexes) - parseInt(elmnt.style.width)) / 2),
+        y: (Math.round((elmnt.offsetTop - gridMoveOffsetY) / cellSize) * cellSize) + (((cellSize * elmnt.dnd_hexes) - parseInt(elmnt.style.height)) / 2)
     }
     var oldLeft = parseFloat(elmnt.style.left);
     var oldTop = parseFloat(elmnt.style.top);
@@ -2107,7 +2093,7 @@ function snapPawnToGrid(elmnt) {
     var diffY = oldTop - (positionOnTranslatedGrid.y + gridMoveOffsetY);
     elmnt.style.left = positionOnTranslatedGrid.x + gridMoveOffsetX + "px";
     elmnt.style.top = positionOnTranslatedGrid.y + gridMoveOffsetY + "px";
-    if (elmnt.attached_objects)
+    if (elmnt.attached_objects) {
         elmnt.attached_objects.forEach(obj => {
             var currX = parseFloat(obj.style.left);
             var currY = parseFloat(obj.style.top);
@@ -2116,6 +2102,7 @@ function snapPawnToGrid(elmnt) {
             obj.style.left = currX + "px";
             obj.style.top = currY + "px";
         });
+    }
 }
 
 function refreshMeasurementTooltip() {
@@ -2158,16 +2145,16 @@ function snapPointToCellSize(point) {
     return point;
 }
 
-function snapOriginPointToGridCenter(point){
-    let transform = (x) => (Math.floor(x / cellSize) * cellSize) + (cellSize / 2);
-    point.x = transform(point.x);
-    point.y = transform(point.y); 
+function snapPointToGridCenter(point){
+    let transform = (coordinate, gridMoveOffset) => (((Math.floor((coordinate - gridMoveOffset) / cellSize) * cellSize)) + (cellSize / 2)) + gridMoveOffset;
+    point.x = transform(point.x, gridMoveOffsetX);
+    point.y = transform(point.y, gridMoveOffsetY); 
 }
 
-function snapOriginPointToGridCorner(point){
-    let transform = (x) => Math.floor(x / cellSize) * cellSize;
-    point.x = transform(point.x);
-    point.y = transform(point.y);
+function snapPointToGridCorner(point){
+    let transform = (coordinate, gridMoveOffset) => (Math.floor((coordinate - gridMoveOffset) / cellSize) * cellSize) + gridMoveOffset;
+    point.x = transform(point.x, gridMoveOffsetX);
+    point.y = transform(point.y, gridMoveOffsetY);
 }
 
 var lastMeasuredSphere, lastMeasuredCube, lastMeasuredCone;
@@ -2175,8 +2162,8 @@ var lastMeasuredLineDrawn, totalMeasuredDistance = 0;
 function drawLineAndShowTooltip(originPosition, destinationPoint, event) {
 
     if(event.ctrlKey) {
-        snapOriginPointToGridCenter(originPosition);
-        snapOriginPointToGridCenter(destinationPoint);
+        snapPointToGridCenter(originPosition);
+        snapPointToGridCenter(destinationPoint);
     }
 
     var measuredDistance = Math.round(
@@ -3117,6 +3104,24 @@ function setTokenImageHandler(e) {
     }
 };
 
+function setTokenColor(event) {
+    Array.from(document.getElementsByClassName("color-selector selected")).forEach((element) => {
+        element.classList.remove("selected");
+    });
+    event.target.classList.add("selected");
+}
+
+function setAlphaValue(color, alpha) {
+    const parts = color.match(/[\d.]+/g);
+    
+    if (parts.length === 3) {
+      parts.push(1);
+    }
+    parts[3] = alpha;
+    
+    return `rgba(${ parts.join(',') })`;
+}
+
 
 function addPawnHandler(e) {
 
@@ -3127,7 +3132,7 @@ function addPawnHandler(e) {
     var pawnSize = creaturePossibleSizes.sizes[sizeIndex];
     var dndSize = creaturePossibleSizes.hexes[sizeIndex];
 
-    var color = document.getElementById("background_color_button_add_pawn").value;
+    var color = setAlphaValue(document.getElementsByClassName("color-selector selected")[0].style.backgroundColor, 0.5);
 
     generatePawns([{
         name: pawnName,
@@ -3519,7 +3524,7 @@ function dragPawn(elmnt) {
                     gridLayer.onmousedown = generalMousedowngridLayer;
                 }
             } else {
-
+                
                 if (isSelectedPawn(e.target) < 0)
                     clearSelectedPawns();
                 setupMeasurements();
@@ -3567,7 +3572,6 @@ function dragPawn(elmnt) {
             pos3 = e.clientX;
             pos4 = e.clientY;
 
-
             //Multiple move
             if (selectedPawns.length > 0) {
                 for (var i = 0; i < selectedPawns.length; i++) {
@@ -3578,6 +3582,7 @@ function dragPawn(elmnt) {
                         obj.style.top = (obj.offsetTop - pos2) + "px";
                         obj.style.left = (obj.offsetLeft - pos1) + "px";
                     });
+                    snapPointToGridCenter({x: pwn.style.left, y: pwn.style.top});
                 }
                 tooltip.style.top = (selectedPawns[0].offsetTop - pos2 - 40) + "px";
                 tooltip.style.left = (selectedPawns[0].offsetLeft - pos1) + "px";
@@ -3609,34 +3614,40 @@ function dragPawn(elmnt) {
             } else {
                 oldLine = {};
             }
-
-
+            
             measurementsLayerContext.beginPath();
             offsetX = ((cellSize / 2) * elmnt.dnd_hexes);
             offsetY = ((cellSize / 2) * elmnt.dnd_hexes);
-            measurementsLayerContext.moveTo(originPosition.x + offsetX, originPosition.y + offsetY);
-            measurementsLayerContext.lineTo(elmnt.offsetLeft + offsetX, elmnt.offsetTop + offsetY);
+
+            let originPoint = { x: originPosition.x + offsetX, y: originPosition.y + offsetY }
+            let elementPoint = { x: elmnt.offsetLeft + offsetX, y: elmnt.offsetTop + offsetY }
+
+            if(e.ctrlKey) {
+                snapPointToGridCenter(originPoint);
+                snapPointToGridCenter(elementPoint);
+            }
+
+            measurementsLayerContext.moveTo(originPoint.x, originPoint.y);
+            measurementsLayerContext.lineTo(elementPoint.x, elementPoint.y);
             measurementsLayerContext.stroke();
             var a = {
-                x: originPosition.x + offsetX,
-                y: originPosition.y + offsetY
+                x: originPoint.x,
+                y: originPoint.y
             }
             var b = {
-                x: elmnt.offsetLeft + offsetX,
-                y: elmnt.offsetTop + offsetY
+                x: elementPoint.x,
+                y: elementPoint.y
             }
             oldLine.a = a;
             oldLine.b = b;
+
             distance = Math.round(
                 Math.sqrt(
-                    Math.pow(elmnt.offsetLeft - originPosition.x, 2) +
-                    Math.pow(elmnt.offsetTop - originPosition.y, 2)
+                    Math.pow(elementPoint.x - originPosition.x, 2) +
+                    Math.pow(elementPoint.y - originPosition.y, 2)
                 ) / cellSize * 5);
             tooltip.innerHTML = distance + " ft";
-
         })
-
-
     }
 
     function closeDragElement(e) {
